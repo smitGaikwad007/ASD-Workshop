@@ -27,7 +27,7 @@ async function updateProduct(id, productData) {
     let products = await db.readData();
     const index = products.findIndex(p => p.id === id);
     if (index !== -1) {
-        products[index] = { ...products[index], ...productData, id }; // Ensure ID doesn't change
+        products[index] = { ...products[index], ...productData, id };
         await db.writeData(products);
         return products[index];
     }

@@ -1,5 +1,5 @@
 let cache = {};
-const TTL = 60 * 1000; // 1 minute in milliseconds
+const TTL = 60 * 1000;
 
 function cacheMiddleware(req, res, next) {
     if (req.method === 'GET') {
@@ -9,19 +9,15 @@ function cacheMiddleware(req, res, next) {
         if (cachedEntry) {
             const now = Date.now();
             if (now - cachedEntry.timestamp < TTL) {
-                // Cache hit and not expired
                 res.setHeader('X-Cache', 'HIT');
                 return res.json(cachedEntry.data);
             } else {
-                // Cache expired
                 delete cache[key];
             }
         }
         
-        // Cache miss
         res.setHeader('X-Cache', 'MISS');
 
-        // Intercept response to cache successful GET requests
         const originalJson = res.json;
         res.json = function (body) {
             if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -34,11 +30,9 @@ function cacheMiddleware(req, res, next) {
         };
         next();
     } else {
-        // Intercept completion to invalidate cache on successful modification
         res.on('finish', () => {
             if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
                 if (res.statusCode >= 200 && res.statusCode < 300) {
-                    // Invalidate all cache entries
                     cache = {};
                 }
             }
